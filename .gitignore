@@ -25,5 +25,7 @@ bin/
 ### VS Code ###
 .vscode/
 
+out.csv
+
 ### Mac OS ###
 .DS_Store
