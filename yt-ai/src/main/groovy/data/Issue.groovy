@@ -1,3 +1,3 @@
 package data
 
-record Issue(String id, String subsystem, String description, String Summary) {}
+record Issue(String id, String subsystem, String description, String summary) {}
