@@ -28,7 +28,7 @@ static void main(String[] args) {
     file << sb.toString()
 }
 
-Result handleSingle(Issue issue, OpenAiService service) {
+static Result handleSingle(Issue issue, OpenAiService service) {
     ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
             .builder()
             .messages(prompt(issue))
