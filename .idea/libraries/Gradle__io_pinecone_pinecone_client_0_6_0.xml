@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: io.pinecone:pinecone-client:0.6.0" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="io.pinecone" artifactId="pinecone-client" version="0.6.0" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.pinecone/pinecone-client/0.6.0/2918782a2f15c7bb89462d03948806a7e04a9c37/pinecone-client-0.6.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

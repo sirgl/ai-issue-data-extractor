@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: jline:jline:2.14.6" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="jline" artifactId="jline" version="2.14.6" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/jline/jline/2.14.6/c3aeac59c022bdc497c8c48ed86fa50450e4896a/jline-2.14.6.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
