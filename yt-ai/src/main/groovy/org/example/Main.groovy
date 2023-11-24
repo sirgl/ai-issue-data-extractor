@@ -1,19 +1,23 @@
 package org.example
 
-import com.theokanning.openai.OpenAiService
 import com.theokanning.openai.completion.CompletionRequest
+import com.theokanning.openai.completion.chat.ChatCompletionRequest
+import com.theokanning.openai.completion.chat.ChatMessage
+import com.theokanning.openai.service.OpenAiService
 import util.CSVExtractor
 
 
 static void main(String[] args) {
-    def data = CSVExtractor.extract("data.csv")
     def apiKey = args[0]
+    def data = CSVExtractor.extract("data.csv")
     OpenAiService service = new OpenAiService(apiKey);
-    CompletionRequest completionRequest = CompletionRequest.builder()
-            .prompt("Somebody once told me the world is gonna roll me")
-//            .model("ada")
-            .echo(true)
-            .build();
-    service.createCompletion("gpt-4", completionRequest).getChoices().forEach(System.out::println);
+    ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+            .builder()
+            .messages([new ChatMessage("system", "")])
+            .maxTokens(256)
+            .model("gpt-3.5-turbo-0613")
+            .build()
+    service.createChatCompletion(chatCompletionRequest).choices
+            .each { println(it) }
 }
 
