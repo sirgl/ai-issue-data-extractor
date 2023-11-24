@@ -3,26 +3,46 @@ package org.example
 import com.theokanning.openai.completion.chat.ChatCompletionRequest
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.service.OpenAiService
+import groovy.json.JsonSlurper
 import util.CSVExtractor
 import data.Issue
 
-
+import java.time.Duration
 
 
 static void main(String[] args) {
     def apiKey = args[0]
     def data = CSVExtractor.extract("data.csv")
-    OpenAiService service = new OpenAiService(apiKey);
+    OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(30))
+
+    def sb = new StringBuilder()
+    for (final def issue in data.take(10)) {
+        try {
+            def result = handleSingle(issue, service)
+            sb.append("${result.issue.id()},${result.response.subsystem()},${result.response.androidPluginInvolved()}\n")
+        } catch (def e) {
+            e.printStackTrace()
+        }
+    }
+    def file = new File("out.csv")
+    file << sb.toString()
+}
+
+Result handleSingle(Issue issue, OpenAiService service) {
     ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
             .builder()
-            .messages(prompt(new Issue("asdas", "asd",
-                    "Rename refactoring doesn't work in external worksheets with Android plugin enabled",
-                    "\"Create a Kotlin project via New Project Wizard. Open an external worksheet (or create one inside project and move to an excluded directory. E.g.: `build/`):\n\n#### Project structure\n![](image.png){width=70%}\n\n#### build/external.ws.kts\n```kotlin\nfun foo() = 1\n\nval bar = 2\n\nfoo()\nbar\n```\n\n#### Problem description\nCheck that Android plugin is enabled:\n\n![](image1.png){width=30%}\n\nTry renaming a function `foo`, then a value `bar`. Note that `foo` is renamed successfully but `bar`'s usage is not renamed:\n\n![](image2.png){width=30%}\n\nNow disable Android plugin and repeat. Everything is renamed correctly.\n\n#### Extra information\n\n>IntelliJ IDEA 2023.2 (Community Edition)\n>Build #IC-232.8660.185, built on July 26, 2023\n>Kotlin: 232-1.9.0-IJ8660.185\n\nSeems like `com.android.tools.idea.lang.proguardR8.ProguardR8UseScopeEnlarger` adds some files to the scope, making it something like `union(LocalSearchScope(worksheetFile), some_android_files)`.\nAnd after that `com.intellij.refactoring.rename.RenameUtil#processUsages` modifies the useScope:\n```java\nif (!(useScope instanceof LocalSearchScope)) {\n    useScope = searchScope.intersectWith(useScope);\n}\n```\"")))
+            .messages(prompt(issue))
             .maxTokens(256)
             .model("gpt-4-vision-preview")
             .build()
-    service.createChatCompletion(chatCompletionRequest).choices
-            .each { println(it) }
+    def rawResponse = service.createChatCompletion(chatCompletionRequest).choices
+            .collect { it.message.content }
+            .join("")
+    if (rawResponse.substring(0, 7) == "```json") {
+        rawResponse = rawResponse[7..-4]
+    }
+    def response = new JsonSlurper().parseText(rawResponse) as Response
+    return new Result(issue: issue, response: response)
 }
 
 static List<ChatMessage> prompt(Issue issue) {
@@ -79,13 +99,19 @@ The issue is:
 ${issue.description()}
 ```
 
-Response format:
-```
+Response format (without ticks and markdown, raw json, must be immediately parseable):
 {
   "subsystem": "<refactoring name from the list of options or None when none applicable or if the issue is not related to refactorings >",
-  "android_plugin_involved": <true/false>
+  "androidPluginInvolved": <true/false>
 }
-```
 """),
     ]
+}
+
+record Response(String subsystem, boolean androidPluginInvolved) {}
+
+
+class Result {
+    Issue issue
+    Response response
 }
